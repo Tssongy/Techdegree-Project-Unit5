@@ -57,6 +57,44 @@ async function getEmployeeInfo(url){
     }
 }
 
+// Find the previous element that has not been filtered out by the search
+function findPreviousElement(element){
+    if(element.previousElementSibling){
+        let previousElement = element.previousElementSibling;
+        if(element.previousElementSibling.style.display !== 'none'){
+            return previousElement;
+        }
+        else if(element.previousElementSibling.style.display === 'none'){
+            return findPreviousElement(element.previousElementSibling);
+        }
+        else{
+            return false;
+        }
+    }
+    else{
+        return false;
+    }
+}
+
+// Find the next element that has not been filtered out by the search
+function findNextElement(element){
+    if(element.nextElementSibling){
+        let nextElement = element.nextElementSibling;
+        if(element.nextElementSibling.style.display !== 'none'){
+            return nextElement;
+        }
+        else if(element.nextElementSibling.style.display === 'none'){
+            return findNextElement(element.nextElementSibling);
+        }
+        else{
+            return false;
+        }
+    }
+    else{
+        return false;
+    }
+}
+        
 
 function generateProfile(data){ 
     data.results.forEach( (employee, index) => {
@@ -88,16 +126,20 @@ function generateProfile(data){
                     }
                     
                 }
-
+                
+                //Definie previous and next elements 
+                const previousElement = findPreviousElement(e.target);
+                const nextElement = findNextElement(e.target);    
+                
                 // Disable buttons previous & next buttons if there are no more employees
-                if(e.target.previousElementSibling){
+                if(previousElement){
                     $('#modal-prev').removeAttr('disabled');
                 }
                 else{
                     $('#modal-prev').attr('disabled',true);
                 }
 
-                if(e.target.nextElementSibling){
+                if(nextElement){
                     $('#modal-next').removeAttr('disabled');
                 }
                 else{
@@ -107,12 +149,12 @@ function generateProfile(data){
                 //Show the previous employee's information when the prev button is clicked
                 $('#modal-prev').on('click', (event) => {
                     event.target.parentNode.parentNode.parentNode.style.display ='none';
-                        e.target.previousElementSibling.click();  
+                        previousElement.click();  
                 })
                 //Show the next employee's infomation when the next button is clicked
                 $('#modal-next').on('click', (event) => {
                     event.target.parentNode.parentNode.parentNode.style.display ='none';
-                        e.target.nextElementSibling.click();
+                        nextElement.click();
                 })
             });
     })
@@ -122,7 +164,7 @@ function generateProfile(data){
 //Enable search function for the names of the employees
 function searchName(){
     var key = $('#search-input').val(); 
-    const names = document.querySelectorAll('#name');
+    const names = document.querySelectorAll('.card-info-container h3');
 
     for(let i =0; i<names.length; i++){
         if(names[i].textContent.match(key.toLowerCase())){
@@ -140,7 +182,7 @@ function showModal(employee){
     var month = employee.dob.date.slice(5,7);
     var year = employee.dob.date.slice(0,4);
 
-    $('.modal-container').show()
+    
     $('.modal-img').attr('src',employee.picture.large);
     $('.modal-container h3').text(`${employee.name.first} ${employee.name.last}`);
     $('.modal-text:first').text(employee.email);
@@ -148,6 +190,7 @@ function showModal(employee){
     $('.modal-text:nth-of-type(3)').text(employee.phone);
     $('.modal-text:nth-of-type(4)').text(`${employee.location.street} ${employee.location.state} ${employee.location.postcode}`);
     $('.modal-text:last').text(`Birthday: ${day}/${month}/${year}`);
+    $('.modal-container').show()
 }
 
 
